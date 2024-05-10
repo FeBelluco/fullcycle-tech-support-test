@@ -1,0 +1,45 @@
+Olá [Nome do Desenvolvedor], Tudo bem?
+
+Analisei as configurações que você compartilhou e fiz algumas alterações para garantir que o projeto funcione corretamente. Aqui estão as modificações que fiz e onde foram aplicadas:
+
+1. Entrypoint no serviço 'app':
+   Adicionei um comando `entrypoint` no serviço 'app' que instala as dependências e inicia o servidor de desenvolvimento usando `npm install && npm run dev`. Isso foi feito no seguinte trecho do arquivo:
+
+   docker-compose.yaml
+   entrypoint: sh -c "npm install && npm run dev"
+   //
+
+2. **Condição de dependência no serviço 'app':**
+   Para garantir que o serviço 'app' só seja iniciado quando o banco de dados estiver saudável, adicionei a condição `service_healthy` à dependência do serviço 'app'. Esta alteração foi feita neste trecho do código:
+
+   docker-compose.yaml
+   depends_on:
+     database:
+       condition: "service_healthy"
+   //
+
+3. Healthcheck no serviço 'database':
+   Implementei um healthcheck para verificar a disponibilidade do banco de dados antes de outros serviços dependerem dele. O healthcheck foi configurado para executar o comando `mysqladmin ping`, verificando a conexão com o banco de dados a cada 10 segundos. As alterações foram aplicadas nestas linhas:
+
+   docker-compose.yaml
+   healthcheck:
+     test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+     interval: 10s
+     timeout: 30s
+     retries: 5
+   //
+
+4. Volume adicional no serviço 'database':
+   Adicionei um volume para montar a pasta `./database` dentro do contêiner do serviço 'database', permitindo a execução de scripts SQL no momento da inicialização do banco de dados. Isso foi realizado com a seguinte alteração:
+
+   docker-compose.yaml
+   volumes:
+     - mysql:/var/lib/mysql
+     - ./database:/docker-entrypoint-initdb.d
+   //
+
+Essas alterações devem resolver os problemas que você estava enfrentando e garantir que o projeto seja executado corretamente. 
+Se precisar de mais assistência ou tiver outras dúvidas, estou à disposição para ajudar.
+
+Atenciosamente,
+Felipe
